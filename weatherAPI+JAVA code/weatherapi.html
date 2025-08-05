@@ -1,0 +1,132 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Weather App</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(to right, #4facfe, #00f2fe);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      height: 100vh;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      width: 300px;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      width: 80%;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      margin-bottom: 15px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #00c6ff;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0072ff;
+    }
+
+    .weather-box {
+      margin-top: 20px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .error-message {
+      color: red;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Weather App</h1>
+    <form id="weatherForm">
+      <input type="text" id="cityInput" placeholder="Enter city name" required />
+      <button type="submit">Get Weather</button>
+    </form>
+
+    <div id="weatherResult" class="weather-box hidden">
+      <h2 id="cityName"></h2>
+      <p><strong>Temperature:</strong> <span id="temperature"></span>°C</p>
+      <p><strong>Condition:</strong> <span id="condition"></span></p>
+      <p><strong>Humidity:</strong> <span id="humidity"></span>%</p>
+      <p><strong>Wind Speed:</strong> <span id="wind"></span> km/h</p>
+    </div>
+
+    <div id="errorMessage" class="error-message hidden"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById("weatherForm");
+    const cityInput = document.getElementById("cityInput");
+    const resultBox = document.getElementById("weatherResult");
+    const errorBox = document.getElementById("errorMessage");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const city = cityInput.value.trim();
+
+      resultBox.classList.add("hidden");
+      errorBox.classList.add("hidden");
+
+      if (!city) return;
+
+      const url = `http://localhost:8000/weather?q=${encodeURIComponent(city)}`;
+
+      try {
+        const response = await fetch(url);
+
+        if (!response.ok) {
+          throw new Error("City not found or server error.");
+        }
+
+        const data = await response.json();
+
+        document.getElementById("cityName").textContent = `${data.location.name}, ${data.location.country}`;
+        document.getElementById("temperature").textContent = data.current.temp_c;
+        document.getElementById("condition").textContent = data.current.condition.text;
+        document.getElementById("humidity").textContent = data.current.humidity;
+        document.getElementById("wind").textContent = data.current.wind_kph;
+
+        resultBox.classList.remove("hidden");
+        cityInput.value = "";
+      } catch (error) {
+        errorBox.textContent = "❌ Error: " + error.message;
+        errorBox.classList.remove("hidden");
+      }
+    });
+  </script>
+</body>
+</html>
